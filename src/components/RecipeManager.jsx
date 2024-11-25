@@ -14,6 +14,8 @@ const RecipeManager = () => {
     chef: "",
     status: "Available",
   });
+  const [editMode, setEditMode] = useState(false); // To track edit mode
+  const [editRecipeId, setEditRecipeId] = useState(null); // To store recipeId of the recipe being edited
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -27,21 +29,79 @@ const RecipeManager = () => {
     fetchRecipes();
   }, []);
 
-  const handleAddRecipe = async (e) => {
+  const handleAddOrUpdateRecipe = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await axios.post(
-        "http://localhost:5001/api/v1/recipes",
-        {
-          ...newRecipe,
-          ingredients: newRecipe.ingredients.split(","),
-        }
-      );
-      setRecipes([...recipes, response.data.recipe]);
-      alert("Recipe added successfully!");
+      if (editMode) {
+        // Update recipe
+        const response = await axios.put(
+          `http://localhost:5001/api/v1/recipes/${editRecipeId}`,
+          {
+            ...newRecipe,
+            ingredients: newRecipe.ingredients.split(","),
+          }
+        );
+        setRecipes((prev) =>
+          prev.map((recipe) =>
+            recipe.recipeId === editRecipeId ? response.data.recipe : recipe
+          )
+        );
+        alert("Recipe updated successfully!");
+      } else {
+        // Add new recipe
+        const response = await axios.post(
+          "http://localhost:5001/api/v1/recipes",
+          {
+            ...newRecipe,
+            ingredients: newRecipe.ingredients.split(","),
+          }
+        );
+        setRecipes([...recipes, response.data.recipe]);
+        alert("Recipe added successfully!");
+      }
+      setNewRecipe({
+        recipeId: "",
+        name: "",
+        cuisine: "",
+        category: "",
+        ingredients: "",
+        chef: "",
+        status: "Available",
+      });
+      setEditMode(false);
+      setEditRecipeId(null);
     } catch (error) {
-      console.error("Error adding recipe:", error);
+      console.error(
+        editMode ? "Error updating recipe:" : "Error adding recipe:",
+        error
+      );
     }
+  };
+
+  const handleDelete = async (recipeId) => {
+    try {
+      await axios.delete(`http://localhost:5001/api/v1/recipes/${recipeId}`);
+      setRecipes(recipes.filter((recipe) => recipe.recipeId !== recipeId));
+      alert("Recipe deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      alert("Failed to delete recipe. Please try again.");
+    }
+  };
+
+  const handleEdit = (recipe) => {
+    setEditMode(true);
+    setEditRecipeId(recipe.recipeId);
+    setNewRecipe({
+      recipeId: recipe.recipeId,
+      name: recipe.name,
+      cuisine: recipe.cuisine,
+      category: recipe.category,
+      ingredients: recipe.ingredients.join(", "),
+      chef: recipe.chef,
+      status: recipe.status,
+    });
   };
 
   const handleSearch = async () => {
@@ -49,12 +109,12 @@ const RecipeManager = () => {
       const response = await axios.get(
         `http://localhost:5001/api/v1/recipes/search?name=${searchQuery}`
       );
-  
+
       if (response.data.length === 0) {
-        setRecipes([]); 
+        setRecipes([]);
         alert("No data found for the given search criteria.");
       } else {
-        setRecipes(response.data); 
+        setRecipes(response.data);
       }
     } catch (error) {
       console.error("Error searching recipes:", error);
@@ -67,14 +127,15 @@ const RecipeManager = () => {
       <h1>Recipe Management App</h1>
 
       <div className="add-recipe">
-        <h2>Add New Recipe</h2>
-        <form onSubmit={handleAddRecipe}>
+        <h2>{editMode ? "Edit Recipe" : "Add New Recipe"}</h2>
+        <form onSubmit={handleAddOrUpdateRecipe}>
           <input
             type="text"
             placeholder="Recipe ID"
             value={newRecipe.recipeId}
             onChange={(e) => setNewRecipe({ ...newRecipe, recipeId: e.target.value })}
             required
+            disabled={editMode} // Disable Recipe ID input during edit
           />
           <input
             type="text"
@@ -118,7 +179,7 @@ const RecipeManager = () => {
             <option value="Available">Available</option>
             <option value="Unavailable">Unavailable</option>
           </select>
-          <button type="submit">Add Recipe</button>
+          <button type="submit">{editMode ? "Update Recipe" : "Add Recipe"}</button>
         </form>
       </div>
 
@@ -144,6 +205,8 @@ const RecipeManager = () => {
               <p><strong>Ingredients:</strong> {recipe.ingredients.join(", ")}</p>
               <p><strong>Chef:</strong> {recipe.chef}</p>
               <p><strong>Status:</strong> {recipe.status}</p>
+              <button onClick={() => handleEdit(recipe)}>Edit</button>
+              <button onClick={() => handleDelete(recipe.recipeId)}>Delete</button>
             </div>
           ))
         ) : (
