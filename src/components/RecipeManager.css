@@ -1,0 +1,75 @@
+.recipe-manager {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h1, h2 {
+    text-align: center;
+    color: #4CAF50;
+  }
+  
+  .add-recipe, .search-recipes, .all-recipes {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background: #f9f9f9;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  form input, form select, form button {
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  form button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  form button:hover {
+    background-color: #45a049;
+  }
+  
+  .recipe-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background: #fff;
+  }
+  
+  .recipe-card h3 {
+    margin: 0 0 10px;
+  }
+  
+  .recipe-card p {
+    margin: 5px 0;
+  }
+  
+  .search-recipes input, .search-recipes button {
+    padding: 10px;
+    font-size: 14px;
+    margin-right: 10px;
+  }
+  
+  .search-recipes button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .search-recipes button:hover {
+    background-color: #45a049;
+  }
+  
